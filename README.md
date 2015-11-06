@@ -2,12 +2,48 @@
 
 ##Top Level API
 
+###Create/Destroy
+
 ```js
 
 var gpExplorer = new GraphExplorer(container, data, options);
-
-
 gpExplorer.destroy();
+
+```
+###Example of data format
+
+```
+
+```
+
+
+###Discovery
+
+```js
+
+var node = gpExplorer.showNode(nodeId); 
+
+var childNodes = gpExplorer.expandNode(nodeId);
+
+
+gpExplorer.collapseNode(nodeId);
+
+
+```
+
+###Get sub DataSet
+
+var data = gpExplorer.getVisibleDataSet();
+
+
+
+
+
+
+
+
+///not sure that we wanna 
+
 
 ```
 
@@ -48,3 +84,5 @@ gpExplorer
 
 
 ```
+
+##E
