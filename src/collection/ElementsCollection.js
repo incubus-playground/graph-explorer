@@ -78,6 +78,11 @@ define(function (require) {
             checkCollection(self);
             return self.modelOfCollection
         }
+        ,
+        modelToVis: function(collection, nodeId) {
+            var model = collection.findCollection(nodeId);
+            return console.log(model);
+        }
     });
 
     return ElementsCollection;

@@ -6,23 +6,25 @@ define(function(require) {
         _ = require('underscore'),
         $ = require('jquery'),
         vis = require('vis'),
-        metadata = require('metadata'),
         GroupModel = require('model/GroupModel'),
         ElementModel = require('model/ElementModel'),
         ElementsCollection = require('collection/ElementsCollection');
 
 
-    function GraphExplorer(container, data, options) {
-        this.container = container;
-        this.options = options;
-        var settings = {
+    function GraphExplorer(settings) {
+        var data;
+        var status = false;
+        var self = this;
+        this.container = settings.container;
+        this.options = settings.options;
+        var dataDefault = {
             nodes: [],
             edges: []
         };
 
         if(settings !== undefined) {
-            nodes = new vis.DataSet(settings.nodes);
-            edges = new vis.DataSet(settings.edges);
+            nodes = new vis.DataSet(dataDefault.nodes);
+            edges = new vis.DataSet(dataDefault.edges);
 
             this.visModel = {
                 nodes: nodes,
@@ -30,12 +32,33 @@ define(function(require) {
             };
         }
 
-        this.dataCollection = new ElementsCollection(metadata.elements);
-        //dataCollection.findCollection("customers");
-        var temp = this.dataCollection.findCollection("public");
-        //var visData = this.dataCollection.generateVisModel();
+        var optionsDefault = {
+            nodes: {
+                shape: 'dot'
+            }
+        };
 
-        network = new vis.Network(container, this.visModel, options);
+        var options = {
+            width: settings.width,
+            height: settings.height
+        };
+
+        this.dataCollection = new ElementsCollection(settings.data.elements);
+        //var temp = this.dataCollection.findCollection("public");
+
+        if(settings.showAll) {
+            data = this.dataCollection.generateVisModel();
+        } else {
+            data = this.visModel;
+            status = true;
+        }
+
+        network = new vis.Network(container, data, optionsDefault);
+        network.setOptions(options);
+
+        if(status) {
+            this.addNode('order_details');
+        }
 
     }
 
@@ -68,6 +91,8 @@ define(function(require) {
             nodes.add({id: nodeName, label: nodeName, group: ''});
         }
     };
+
+
 
     return GraphExplorer;
 
