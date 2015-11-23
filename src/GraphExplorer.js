@@ -37,7 +37,14 @@ define(function(require) {
 
         this.optionsDefault = {
             nodes: {
-                shape: 'dot'
+                shape: 'dot',
+                color: {
+                    background: '#97C2FC',
+                    highlight: {
+                        border: '#2B7CE9',
+                        background: '#97C2FC'
+                    }
+                }
             },
             edges: {
                 smooth: {
@@ -93,7 +100,6 @@ define(function(require) {
                     (nodePosition[nodeName].y + 7) > params.pointer.canvas.y &&
                     (nodePosition[nodeName].y - 7) < params.pointer.canvas.y
                 ){
-                    console.log('hello');
                     if(!statusSuggestion) {
                         self.expandNode(nodeName);
                         statusSuggestion = true;
@@ -127,29 +133,56 @@ define(function(require) {
     GraphExplorer.prototype.showNode = function(nodeId, x, y) {
         var model = this.dataCollection.findCollection(nodeId);
         var self = this;
+        var countEdges = 0;
         var nodeName = model.get('name');
         this.elements = model.get('elements');
         this.referenceTo = false;
-        this.raferenceToArrayEmpty = true;
 
         this.elements.each(function(item) {
             if(item.get('referenceTo') !== undefined) {
                 edges.add({from: model.get('name'), to: item._getRelatedTableName(item.get('referenceTo')), arrows:'to'});
                 self.referenceTo = true;
+                countEdges++;
             }
         });
 
         if(x || y) {
-            nodes.add({id: nodeName, label: nodeName, x: x, y: y, group: ''});
+            nodes.add({id: nodeName, label: nodeName, x: x, y: y, group: '', referenceTo: countEdges});
         } else {
-            nodes.add({id: nodeName, label: nodeName, group: ''});
+            nodes.add({id: nodeName, label: nodeName, group: '', referenceTo: countEdges});
         }
+        this.nodesOnCanvas.push(nodeName);
 
+        this.nodesOnCanvas.forEach(function(nodeId){
+            var nodeModel = self.dataCollection.findCollection(nodeId);
+            console.log(nodeId);
+            console.log(countEdges);
+
+            var countReference = getReferencesCount(nodeModel);
+
+
+            console.log(countReference);
+
+            if(countReference === nodes._data[nodeId].referenceTo) {
+                deletePlusIcon(nodeId);
+            }
+
+        });
+
+        function getReferencesCount(model) {
+            //var self = this;
+            var countReference = 0;
+            model.get('elements').each(function(model) {
+                if(model.get('referenceTo') !== undefined && self.nodesOnCanvas.indexOf(model._getRelatedTableName(model.get('referenceTo'))) !== -1) {
+                    return countReference++;
+                }
+            });
+            return countReference
+        }
 
         if(this.referenceTo) {
             showPlusIcon(nodeName);
         }
-        this.nodesOnCanvas.push(nodeName);
     };
 
     GraphExplorer.prototype.expandNode = function(nodeId) {
@@ -225,6 +258,20 @@ define(function(require) {
                 ctx.fill();
             });
     }
+
+    function deletePlusIcon(nodeId) {
+
+        network.on('afterDrawing', function (ctx) {
+            var nodePosition = network.getPositions([nodeId]);
+            ctx.fillStyle = '#97C2FC';
+            ctx.beginPath();
+            ctx.fillRect(nodePosition[nodeId].x-8, nodePosition[nodeId].y-8, 16, 16);
+            ctx.closePath();
+            ctx.fill();
+        });
+    }
+
+
 
     return GraphExplorer;
 
