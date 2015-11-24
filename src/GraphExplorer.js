@@ -19,6 +19,7 @@ define(function(require) {
         var self = this;
         this.container = settings.container;
         this.options = settings.options;
+        this.inputData = settings.data.elements;
         var dataDefault = {
             nodes: [],
             edges: []
@@ -67,7 +68,7 @@ define(function(require) {
             height: settings.height
         };
 
-        this.dataCollection = new ElementsCollection(settings.data.elements);
+        this.dataCollection = new ElementsCollection(this.inputData);
         //var temp = this.dataCollection.findCollection("public");
 
         if(settings.showAll) {
@@ -155,13 +156,8 @@ define(function(require) {
 
         this.nodesOnCanvas.forEach(function(nodeId){
             var nodeModel = self.dataCollection.findCollection(nodeId);
-            console.log(nodeId);
-            console.log(countEdges);
 
             var countReference = getReferencesCount(nodeModel);
-
-
-            console.log(countReference);
 
             if(countReference === nodes._data[nodeId].referenceTo) {
                 deletePlusIcon(nodeId);
@@ -170,7 +166,6 @@ define(function(require) {
         });
 
         function getReferencesCount(model) {
-            //var self = this;
             var countReference = 0;
             model.get('elements').each(function(model) {
                 if(model.get('referenceTo') !== undefined && self.nodesOnCanvas.indexOf(model._getRelatedTableName(model.get('referenceTo'))) !== -1) {
@@ -236,6 +231,30 @@ define(function(require) {
         nodes.remove(this.raferenceToArray);
         this.raferenceToArray = [];
         network.redraw();
+    };
+
+    GraphExplorer.prototype.getVisibleDataSet = function() {
+        var self = this;
+        var outputData = {
+            elements: [],
+            name: 'outputData'
+        };
+        this.nodesOnCanvas.forEach(function(nodeId){
+
+            function getNodeGroup(data) {
+                data.forEach(function(item) {
+                    if(!item.element && item.group.name == nodeId) {
+                        outputData.elements.push(item);
+                    } else if(!item.element && item.group.elements) {
+                        getNodeGroup(item.group.elements);
+                    }
+                });
+
+                return outputData;
+            }
+            getNodeGroup(self.inputData);
+        });
+        return outputData;
     };
 
     function showPlusIcon(nodeId) {
