@@ -2,7 +2,7 @@
   "name": "graph-explorer",
   "version": "0.0.1",
   "description": "Graph Explorer",
-  "main": "index.js",
+  "main": "main.js",
   "scripts": {
     "test": "grunt",
     "postinstall": "bower cache clean && bower install"

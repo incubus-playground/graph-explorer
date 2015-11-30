@@ -4,12 +4,9 @@
 
 define(function (require) {
     var Backbone = require('backbone'),
-        $ = require('jquery'),
         _ = require('underscore'),
-        GroupModel = require('model/GroupModel'),
-        ElementModel = require('model/ElementModel');
-
-    require('backbone.localStorage');
+        GroupModel = require('GroupModel'),
+        ElementModel = require('ElementModel');
 
     var ElementsCollection = Backbone.Collection.extend({
         model: function(attrs, options) {
@@ -23,14 +20,6 @@ define(function (require) {
             } else {
                 throw 'error';
             }
-        },
-
-        initialize: function() {
-            this.listenTo(this.collection, 'update reset', this.Foo);
-        },
-
-        Foo: function(item) {
-            console.log(item);
         },
 
         generateVisModel: function () {
@@ -77,11 +66,6 @@ define(function (require) {
 
             checkCollection(self);
             return self.modelOfCollection
-        },
-
-        modelToVis: function(collection, nodeId) {
-            var model = collection.findCollection(nodeId);
-            return console.log(model);
         }
     });
 

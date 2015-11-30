@@ -2,13 +2,11 @@
  * Created by valeriy.abornyev on 11/9/2015.
  */
 define(function(require) {
-    var Backbone = require('backbone'),
-        _ = require('underscore'),
+    var vis = require('vis'),
         $ = require('jquery'),
-        vis = require('vis'),
-        GroupModel = require('model/GroupModel'),
-        ElementModel = require('model/ElementModel'),
-        ElementsCollection = require('collection/ElementsCollection');
+        GroupModel = require('GroupModel'),
+        ElementModel = require('ElementModel'),
+        ElementsCollection = require('ElementsCollection');
 
 
     function GraphExplorer(settings) {
@@ -19,107 +17,134 @@ define(function(require) {
         var self = this;
         this.container = settings.container;
         this.options = settings.options;
-        this.inputData = settings.data.elements;
-        var dataDefault = {
+        this.inputData = {};
+
+
+        $.ajax({
+            method: 'get',
+            url: settings.data,
+            success: function (data) {
+                self.inputData = data.elements;
+                self.dataCollection = new ElementsCollection(self.inputData);
+                var dataDefault = {
+                    nodes: [],
+                    edges: []
+                };
+                self.nodesOnCanvas = [];
+
+                if(settings !== undefined) {
+                    nodes = new vis.DataSet(dataDefault.nodes);
+                    edges = new vis.DataSet(dataDefault.edges);
+
+                    self.visModel = {
+                        nodes: nodes,
+                        edges: edges
+                    };
+                }
+
+                self.optionsDefault = {
+                    nodes: {
+                        shape: 'dot',
+                        color: {
+                            background: '#97C2FC',
+                            highlight: {
+                                border: '#2B7CE9',
+                                background: '#97C2FC'
+                            }
+                        }
+                    },
+                    edges: {
+                        smooth: {
+                            enabled: false
+                        },
+                        physics: false
+                    },
+                    physics: {
+                        enabled: true
+                    },
+                    groups: {
+                        suggestion: {
+                            shape: 'box'
+                        }
+                    }
+                };
+
+                var options = {
+                    width: settings.width,
+                    height: settings.height
+                };
+
+
+
+                if(settings.showAll) {
+                    data = self.dataCollection.generateVisModel();
+                } else {
+                    data = self.visModel;
+                    status = true;
+                }
+
+                network = new vis.Network(container, data, self.optionsDefault);
+                network.setOptions(options);
+
+                if(status) {
+                    self.showNode('order_details');
+                }
+
+
+
+                network.on('click', function (params) {
+                    params.event = "[original event]";
+                    console.log(JSON.stringify(params, null, 4));
+
+                    var nodeName = params.nodes[0];
+                    var nodePosition = network.getPositions(nodeName);
+
+                    if(params.nodes.length > 0 && nodes._data[nodeName].group !== 'suggestion') {
+                        if(
+                            (nodePosition[nodeName].x - 7) < params.pointer.canvas.x &&
+                            (nodePosition[nodeName].x + 7) > params.pointer.canvas.x &&
+                            (nodePosition[nodeName].y + 7) > params.pointer.canvas.y &&
+                            (nodePosition[nodeName].y - 7) < params.pointer.canvas.y
+                        ){
+                            if(!statusSuggestion) {
+                                self.expandNode(nodeName);
+                                statusSuggestion = true;
+                            } else {
+                                self.collapseNode(nodeName);
+                                statusSuggestion = false;
+                            }
+
+                        }
+                    } else if(params.nodes.length > 0 && nodes._data[nodeName].group == 'suggestion') {
+                        var nodeX = nodePosition[nodeName].x;
+                        var nodeY = nodePosition[nodeName].y;
+
+                        self.collapseNode(nodeName);
+                        statusSuggestion = false;
+
+                        self.showNode(nodeName, nodeX, nodeY);
+                    }
+                });
+            }
+        });
+
+    }
+
+    function generateVisModelFromData(data) {
+        var visModel = {
             nodes: [],
             edges: []
         };
-        this.nodesOnCanvas = [];
-
-        if(settings !== undefined) {
-            nodes = new vis.DataSet(dataDefault.nodes);
-            edges = new vis.DataSet(dataDefault.edges);
-
-            this.visModel = {
-                nodes: nodes,
-                edges: edges
-            };
-        }
-
-        this.optionsDefault = {
-            nodes: {
-                shape: 'dot',
-                color: {
-                    background: '#97C2FC',
-                    highlight: {
-                        border: '#2B7CE9',
-                        background: '#97C2FC'
-                    }
+        var elements;
+        data.forEach(function(item) {
+            console.log(item.group.name);
+            if(item.group.elements) {
+                for(; elements; elements = item.group.elements){
+                    console.log(elements.group.name);
                 }
-            },
-            edges: {
-                smooth: {
-                    enabled: false
-                },
-                physics: false
-            },
-            physics: {
-                enabled: true
-            },
-            groups: {
-                suggestion: {
-                    shape: 'box'
-                }
-            }
-        };
-
-        var options = {
-            width: settings.width,
-            height: settings.height
-        };
-
-        this.dataCollection = new ElementsCollection(this.inputData);
-        //var temp = this.dataCollection.findCollection("public");
-
-        if(settings.showAll) {
-            data = this.dataCollection.generateVisModel();
-        } else {
-            data = this.visModel;
-            status = true;
-        }
-
-        network = new vis.Network(container, data, this.optionsDefault);
-        network.setOptions(options);
-
-        if(status) {
-            this.showNode('order_details');
-        }
-
-
-
-        network.on('click', function (params) {
-            params.event = "[original event]";
-            console.log(JSON.stringify(params, null, 4));
-
-            var nodeName = params.nodes[0];
-            var nodePosition = network.getPositions(nodeName);
-
-            if(params.nodes.length > 0 && nodes._data[nodeName].group !== 'suggestion') {
-                if(
-                    (nodePosition[nodeName].x - 7) < params.pointer.canvas.x &&
-                    (nodePosition[nodeName].x + 7) > params.pointer.canvas.x &&
-                    (nodePosition[nodeName].y + 7) > params.pointer.canvas.y &&
-                    (nodePosition[nodeName].y - 7) < params.pointer.canvas.y
-                ){
-                    if(!statusSuggestion) {
-                        self.expandNode(nodeName);
-                        statusSuggestion = true;
-                    } else {
-                        self.collapseNode(nodeName);
-                        statusSuggestion = false;
-                    }
-
-                }
-            } else if(params.nodes.length > 0 && nodes._data[nodeName].group == 'suggestion') {
-                var nodeX = nodePosition[nodeName].x;
-                var nodeY = nodePosition[nodeName].y;
-
-                self.collapseNode(nodeName);
-                statusSuggestion = false;
-
-                self.showNode(nodeName, nodeX, nodeY);
             }
         });
+        return visModel;
     }
 
     GraphExplorer.prototype.destroy = function() {
@@ -259,7 +284,6 @@ define(function(require) {
 
     function showPlusIcon(nodeId) {
             network.on('afterDrawing', function (ctx) {
-                //var nodeId = 'order_details';
                 var nodePosition = network.getPositions([nodeId]);
                 ctx.strokeStyle = '#2B7CE9';
                 ctx.fillStyle = 'rgba(0,0,0,0)';
