@@ -89,6 +89,7 @@
 	            url: settings.data,
 	            success: function (data) {
 	                self.inputData = data.elements;
+	                self.inputDataClone = (JSON.parse(JSON.stringify(self.inputData)));
 	                self.dataCollection = new ElementsCollection(self.inputData);
 	                var dataDefault = {
 	                    nodes: [],

@@ -22,7 +22,8 @@ var vis = require('vis'),
             url: settings.data,
             success: function (data) {
                 self.inputData = data.elements;
-                self.dataCollection = new ElementsCollection(self.inputData);
+                self.inputDataClone = (JSON.parse(JSON.stringify(self.inputData)));
+                self.dataCollection = new ElementsCollection(self.inputDataClone);
                 var dataDefault = {
                     nodes: [],
                     edges: []
@@ -274,7 +275,7 @@ var vis = require('vis'),
 
                 return outputData;
             }
-            getNodeGroup(self.inputData);
+            getNodeGroup(self.inputDataClone);
         });
         return outputData;
     };
