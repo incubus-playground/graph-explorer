@@ -1,0 +1,41 @@
+{
+  "name": "graph-explorer",
+  "version": "0.0.1",
+  "description": "Graph Explorer",
+  "main": "main.js",
+  "scripts": {
+    "test": "grunt",
+    "build-js": "browserify src/example/main.js > src/example/app.js",
+    "watch-js": "watchify src/example/main.js -o src/example/app.js -vd",
+    "webpack": "webpack -w"
+
+  },
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/drwebmaker/graph-explorer"
+  },
+  "keywords": [
+    "graph-explorer"
+  ],
+  "author": "valeriy.abornyev",
+  "license": "MIT",
+  "homepage": "https://github.com/drwebmaker/graph-explorer",
+  "devDependencies": {
+    "grunt": "^0.4.5",
+    "grunt-contrib-requirejs": "^0.4.4",
+    "grunt-karma": "^0.12.0",
+    "karma": "latest",
+    "karma-jasmine": "latest",
+    "karma-phantomjs-launcher": "latest",
+    "karma-requirejs": "^0.2.2",
+    "karma-sinon": "^1.0.4",
+    "load-grunt-tasks": "^3.2.0",
+    "time-grunt": "^1.2.1",
+    "vis": "~4.8.0",
+    "underscore": "latest",
+    "backbone": "latest",
+    "jquery": "~2.1.4",
+    "browserify": "latest",
+    "watchify": "latest"
+  }
+}
