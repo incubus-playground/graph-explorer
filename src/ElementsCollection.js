@@ -2,11 +2,10 @@
  * Created by valeriy.abornyev on 9/23/2015.
  */
 
-define(function (require) {
-    var Backbone = require('backbone'),
-        _ = require('underscore'),
-        GroupModel = require('GroupModel'),
-        ElementModel = require('ElementModel');
+    Backbone = require('backbone');
+    _ = require('underscore');
+    var GroupModel = require('./GroupModel'),
+        ElementModel = require('./ElementModel');
 
     var ElementsCollection = Backbone.Collection.extend({
         model: function(attrs, options) {
@@ -69,5 +68,4 @@ define(function (require) {
         }
     });
 
-    return ElementsCollection;
-});
+    module.exports =  ElementsCollection;

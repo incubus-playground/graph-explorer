@@ -1,9 +1,7 @@
 /**
  * Created by valeriy.abornyev on 11/9/2015.
  */
-
-require(['GraphExplorer'],function (GraphExplorer) {
-    // create an array with nodes
+var GraphExplorer = require('../GraphExplorer');
 
     var container = document.getElementById('container');
 
@@ -16,4 +14,3 @@ require(['GraphExplorer'],function (GraphExplorer) {
     };
 
     window.graphExplorer =  new GraphExplorer(settings);
-});

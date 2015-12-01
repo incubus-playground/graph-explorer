@@ -10,28 +10,6 @@ module.exports = function (grunt) {
                 autoWatch: false,
                 singleRun: true
             }
-        },
-
-        requirejs: {
-            compileJS: {
-                options: {
-                    baseUrl: 'src',
-                    include: ['main'],
-                    includeRequire: ['main'],
-                    mainConfigFile: 'src/require.config.js',
-                    wrap: true,
-                    name: 'bower_components/almond/almond',
-                    out: 'build/main.js',
-                    optimize: 'none'
-                }
-            },
-            compileCSS: {
-                options: {
-                    optimizeCss: 'standard',
-                    cssIn: 'css/main.css',
-                    out: 'build/main.css'
-                }
-            }
         }
     });
 

@@ -1,19 +1,16 @@
 /**
  * Created by valeriy.abornyev on 11/9/2015.
  */
-define(function(require) {
-    var vis = require('vis'),
-        $ = require('jquery'),
-        GroupModel = require('GroupModel'),
-        ElementModel = require('ElementModel'),
-        ElementsCollection = require('ElementsCollection');
+
+var vis = require('vis'),
+    $ = require('jquery'),
+    ElementsCollection = require('./ElementsCollection');
 
 
     function GraphExplorer(settings) {
         var data;
         var status = false;
         var statusSuggestion = false;
-        this.temp = true;
         var self = this;
         this.container = settings.container;
         this.options = settings.options;
@@ -314,8 +311,4 @@ define(function(require) {
         });
     }
 
-
-
-    return GraphExplorer;
-
-});
+module.exports = GraphExplorer;

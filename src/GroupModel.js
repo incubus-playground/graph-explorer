@@ -1,10 +1,9 @@
 /**
  * Created by valeriy.abornyev on 9/23/2015.
  */
-define(function (require) {
-    var Backbone = require('backbone');
+    Backbone = require('backbone');
 
-    return Backbone.Model.extend({
+    var GroupModel = Backbone.Model.extend({
         defaults: {
             name: undefined,
             elements: undefined,
@@ -13,4 +12,5 @@ define(function (require) {
 
         idAttribute: 'name'
     });
-});
+
+module.exports = GroupModel;
