@@ -54,7 +54,7 @@
 	    var settings = {
 	        container: container,
 	        data: 'http://localhost:63342/graph-explorer/src/example/metadata.json',
-	        showAll: false,
+	        showAll: true,
 	        height: '500px',
 	        width: '100%'
 	    };
@@ -9682,22 +9682,30 @@
 	                edges: []
 	            };
 	
-	            function setValues(collection) {
-	                collection.each(function (item) {
-	
-	                    if(item.get('elements')) {
-	                        nameModel = item.get('name');
-	                        self.model.nodes.push({id: item.get('name'), label: item.get('name')});
-	                        setValues(item.get('elements'));
-	                    } else  if(item.get('referenceTo') !== undefined && !_.contains(collection, item._getRelatedTableName(item.get('referenceTo')))) {
-	                        self.model.edges.push({from: nameModel, to: item._getRelatedTableName(item.get('referenceTo')), arrows:'to'});
+	            var list = this;
+	            do {
+	                list.each(function(model) {
+	                    if(model.id !== undefined) {
+	                        setValues(model);
+	                        list = model.get('elements');
+	                        self.getModel = model;
+	                    } else {
+	                        self.getModel = undefined;
 	                    }
-	                });
-	                return self.model;
+	                })
+	            } while (self.getModel !== undefined);
+	
+	            function setValues(model) {
+	                if(model.get('elements')) {
+	                    nameModel = model.get('name');
+	                    self.model.nodes.push({id: model.get('name'), label: model.get('name')});
+	                    model.get('elements').each(function(item){
+	                        if(item.get('referenceTo') !== undefined && !_.contains(list, item._getRelatedTableName(item.get('referenceTo')))) {
+	                            self.model.edges.push({from: nameModel, to: item._getRelatedTableName(item.get('referenceTo')), arrows:'to'});
+	                        }
+	                    });
+	                }
 	            }
-	
-	            setValues(self);
-	
 	            return self.model;
 	        },
 	

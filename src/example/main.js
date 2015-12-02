@@ -8,7 +8,7 @@ var GraphExplorer = require('../GraphExplorer');
     var settings = {
         container: container,
         data: 'http://localhost:63342/graph-explorer/src/example/metadata.json',
-        showAll: false,
+        showAll: true,
         height: '500px',
         width: '100%'
     };
