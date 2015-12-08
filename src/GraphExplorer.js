@@ -8,7 +8,7 @@ var vis = require('vis'),
 
 
     function GraphExplorer(settings) {
-        var data;
+        var visData;
         var status = false;
         var statusSuggestion = false;
         var self = this;
@@ -30,15 +30,7 @@ var vis = require('vis'),
                 };
                 self.nodesOnCanvas = [];
 
-                if(settings !== undefined) {
-                    nodes = new vis.DataSet(dataDefault.nodes);
-                    edges = new vis.DataSet(dataDefault.edges);
 
-                    self.visModel = {
-                        nodes: nodes,
-                        edges: edges
-                    };
-                }
 
                 self.optionsDefault = {
                     nodes: {
@@ -72,14 +64,30 @@ var vis = require('vis'),
                     height: settings.height
                 };
 
+                if(settings !== undefined) {
+                    nodes = new vis.DataSet(dataDefault.nodes);
+                    edges = new vis.DataSet(dataDefault.edges);
 
+                    self.visModel = {
+                        nodes: nodes,
+                        edges: edges
+                    };
+                }
 
                 if(settings.showAll) {
-                    data = self.dataCollection.generateVisModel();
+                    visData = self.dataCollection.generateVisModel();
+                    nodes = new vis.DataSet(visData.nodes);
+                    edges = new vis.DataSet(visData.edges);
+                    data = {
+                        nodes: nodes,
+                        edges: edges
+                    };
                 } else {
                     data = self.visModel;
                     status = true;
                 }
+
+
 
                 network = new vis.Network(container, data, self.optionsDefault);
                 network.setOptions(options);
@@ -88,61 +96,58 @@ var vis = require('vis'),
                     self.showNode('order_details');
                 }
 
-
-
                 network.on('click', function (params) {
                     params.event = "[original event]";
                     console.log(JSON.stringify(params, null, 4));
 
-                    var nodeName = params.nodes[0];
+                    var nodeName;
+
+                    var clickDOMPositionX = params.pointer.DOM.x;
+                    var clickDOMPositionY = params.pointer.DOM.y;
+                    var nodeNamePlusClicked = network.getNodeAt({x: clickDOMPositionX - 26, y: clickDOMPositionY + 40});
+
+                    if(nodeNamePlusClicked == undefined && params.nodes[0] !== undefined) {
+                        nodeName = params.nodes[0];
+                    } else if(nodeNamePlusClicked !== undefined){
+                        nodeName = nodeNamePlusClicked;
+                    }
+
                     var nodePosition = network.getPositions(nodeName);
 
-                    if(params.nodes.length > 0 && nodes._data[nodeName].group !== 'suggestion') {
-                        if(
-                            (nodePosition[nodeName].x - 7) < params.pointer.canvas.x &&
-                            (nodePosition[nodeName].x + 7) > params.pointer.canvas.x &&
-                            (nodePosition[nodeName].y + 7) > params.pointer.canvas.y &&
-                            (nodePosition[nodeName].y - 7) < params.pointer.canvas.y
-                        ){
-                            if(!statusSuggestion) {
-                                self.expandNode(nodeName);
-                                statusSuggestion = true;
-                            } else {
-                                self.collapseNode(nodeName);
-                                statusSuggestion = false;
+                    openCloseSuggestionList(nodeName);
+
+                    function openCloseSuggestionList(nodeId) {
+                        if(nodeId !== undefined && nodes._data[nodeId].group !== 'suggestion') {
+                            if(
+                                (nodePosition[nodeId].x + 19) < params.pointer.canvas.x &&
+                                (nodePosition[nodeId].x + 30) > params.pointer.canvas.x &&
+                                (nodePosition[nodeId].y - 18) > params.pointer.canvas.y &&
+                                (nodePosition[nodeId].y - 31) < params.pointer.canvas.y
+                            ) {
+                                if(!statusSuggestion) {
+                                    self.expandNode(nodeId);
+                                    statusSuggestion = true;
+                                } else {
+                                    self.collapseNode(nodeId);
+                                    statusSuggestion = false;
+                                }
                             }
+                        } else if(nodeId !== undefined && nodes._data[nodeId].group == 'suggestion') {
+                            var nodeX = nodePosition[nodeId].x;
+                            var nodeY = nodePosition[nodeId].y;
 
+                            self.collapseNode(nodeId);
+                            statusSuggestion = false;
+
+                            self.showNode(nodeId, nodeX, nodeY);
                         }
-                    } else if(params.nodes.length > 0 && nodes._data[nodeName].group == 'suggestion') {
-                        var nodeX = nodePosition[nodeName].x;
-                        var nodeY = nodePosition[nodeName].y;
-
-                        self.collapseNode(nodeName);
-                        statusSuggestion = false;
-
-                        self.showNode(nodeName, nodeX, nodeY);
                     }
+
+
                 });
+
             }
         });
-
-    }
-
-    function generateVisModelFromData(data) {
-        var visModel = {
-            nodes: [],
-            edges: []
-        };
-        var elements;
-        data.forEach(function(item) {
-            console.log(item.group.name);
-            if(item.group.elements) {
-                for(; elements; elements = item.group.elements){
-                    console.log(elements.group.name);
-                }
-            }
-        });
-        return visModel;
     }
 
     GraphExplorer.prototype.destroy = function() {
@@ -161,6 +166,7 @@ var vis = require('vis'),
         var nodeName = model.get('name');
         this.elements = model.get('elements');
         this.referenceTo = false;
+        self.delPlusIconStatus = true;
 
         this.elements.each(function(item) {
             if(item.get('referenceTo') !== undefined) {
@@ -177,30 +183,7 @@ var vis = require('vis'),
         }
         this.nodesOnCanvas.push(nodeName);
 
-        this.nodesOnCanvas.forEach(function(nodeId){
-            var nodeModel = self.dataCollection.findCollection(nodeId);
-
-            var countReference = getReferencesCount(nodeModel);
-
-            if(countReference === nodes._data[nodeId].referenceTo) {
-                deletePlusIcon(nodeId);
-            }
-
-        });
-
-        function getReferencesCount(model) {
-            var countReference = 0;
-            model.get('elements').each(function(model) {
-                if(model.get('referenceTo') !== undefined && self.nodesOnCanvas.indexOf(model._getRelatedTableName(model.get('referenceTo'))) !== -1) {
-                    return countReference++;
-                }
-            });
-            return countReference
-        }
-
-        if(this.referenceTo) {
-            showPlusIcon(nodeName);
-        }
+        showPlusIcon.call(this);
     };
 
     GraphExplorer.prototype.expandNode = function(nodeId) {
@@ -280,36 +263,51 @@ var vis = require('vis'),
         return outputData;
     };
 
-    function showPlusIcon(nodeId) {
-            network.on('afterDrawing', function (ctx) {
-                var nodePosition = network.getPositions([nodeId]);
-                ctx.strokeStyle = '#2B7CE9';
-                ctx.fillStyle = 'rgba(0,0,0,0)';
-                ctx.beginPath();
-                ctx.circle(nodePosition[nodeId].x, nodePosition[nodeId].y, 7);
-                ctx.closePath();
-                ctx.fill();
-                ctx.stroke();
-
-                ctx.fillStyle = '#2B7CE9';
-                ctx.beginPath();
-                ctx.fillRect(nodePosition[nodeId].x - 1, nodePosition[nodeId].y - 5, 2, 10);
-                ctx.fillRect(nodePosition[nodeId].x - 5, nodePosition[nodeId].y - 1, 10, 2);
-                ctx.closePath();
-                ctx.fill();
-            });
-    }
-
-    function deletePlusIcon(nodeId) {
+    function showPlusIcon() {
+        var self = this;
 
         network.on('afterDrawing', function (ctx) {
-            var nodePosition = network.getPositions([nodeId]);
-            ctx.fillStyle = '#97C2FC';
-            ctx.beginPath();
-            ctx.fillRect(nodePosition[nodeId].x-8, nodePosition[nodeId].y-8, 16, 16);
-            ctx.closePath();
-            ctx.fill();
+
+            self.nodesOnCanvas.forEach(function(nodeId){
+                var nodeModel = self.dataCollection.findCollection(nodeId);
+
+                var countReference = getReferencesCount(nodeModel, self.nodesOnCanvas);
+
+                if(countReference !== nodes._data[nodeId].referenceTo) {
+
+                    var nodePosition = network.getPositions([nodeId]);
+
+                    ctx.strokeStyle = '#2B7CE9';
+                    ctx.fillStyle = 'rgba(0,0,0,0)';
+                    ctx.beginPath();
+                    ctx.circle(nodePosition[nodeId].x + 25, nodePosition[nodeId].y - 25, 7);
+                    ctx.closePath();
+                    ctx.fill();
+                    ctx.stroke();
+
+                    ctx.fillStyle = '#2B7CE9';
+                    ctx.beginPath();
+                    ctx.fillRect(nodePosition[nodeId].x + 24, nodePosition[nodeId].y - 30, 2, 10);
+                    ctx.fillRect(nodePosition[nodeId].x + 20, nodePosition[nodeId].y - 26, 10, 2);
+                    ctx.closePath();
+                    ctx.fill();
+                }
+
+            });
+
+
+
         });
     }
 
+
+    function getReferencesCount(model, nodesOnCanvas) {
+        var countReference = 0;
+        model.get('elements').each(function(model) {
+            if(model.get('referenceTo') !== undefined && nodesOnCanvas.indexOf(model._getRelatedTableName(model.get('referenceTo'))) !== -1) {
+                return countReference++;
+            }
+        });
+        return countReference
+    }
 module.exports = GraphExplorer;
