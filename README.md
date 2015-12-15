@@ -4,14 +4,44 @@
 
 ###Create/Destroy
 
-```js
-
-var gpExplorer = new GraphExplorer(container, data, options);
+```javascript
+var gpExplorer = new GraphExplorer(settings);
 gpExplorer.destroy();
-
 ```
-###Example of data format
 
+###Example
+
+When you create new GraphExplorer you put settings like variable.
+
+####Expample of settings
+
+```javascript
+{
+    container: container,
+    url: 'http://localhost:63342/graph-explorer/example/metadata.json',
+    showAll: false,
+    height: '500px',
+    width: '100%'
+}
+```
+
+
+container - it's block where your graph will be created
+
+For example:
+```javascript
+var container = document.getElementById('container');
+```
+
+url - it's url to your data. Example of data format see above.
+
+
+showAll - if ```true```, you show all node and edges from your data, if ```false``` you get white board for your graph.
+
+height and width - it's size of you graph block
+
+
+####Expample of data format
 ```
 {
     "elements": [
@@ -116,27 +146,28 @@ gpExplorer.destroy();
 ```
 
 
+
+
 ###Discovery
 
-```js
-
+```javascript
 var node = gpExplorer.showNode(nodeId); 
-
 var childNodes = gpExplorer.expandNode(nodeId);
-
-
 gpExplorer.collapseNode(nodeId);
-
-
 ```
 
 ###Get sub DataSet
 
+```javascript
 var data = gpExplorer.getVisibleDataSet();
+```
 
+##How to build
 
-
-
+```sh
+& npm install
+& webpack
+```
 
 
 
@@ -144,14 +175,10 @@ var data = gpExplorer.getVisibleDataSet();
 ///not sure that we wanna 
 
 
-```
-
 ##Node manipulations
 
-```js
-
+```javascript
 //Node operations
-
 gpExplorer
 	.addNode({
 			id : "/product",
@@ -163,14 +190,11 @@ gpExplorer
 	})
 	.addNode({ ... })
 	.removeNode(nodeId);
-
-
 ```
 
 ##Edges manipulations 
 
-```js
-
+```javascript
 gpExplorer
 	.addEdge({
 		from: nodeId,
@@ -180,8 +204,6 @@ gpExplorer
 		from: nodeId,
 		to:	  nodeId 
 	});
-
-
 ```
 
 ##E

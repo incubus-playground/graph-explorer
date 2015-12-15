@@ -1,9 +1,9 @@
 module.exports = {
     entry: {
-        app: __dirname + '/src/example/main.js'
+        app: __dirname + '/example/main.js'
     },
     output: {
-        filename: __dirname + '/src/example/app.js'
+        filename: __dirname + '/example/app.js'
     },
     devtool: 'source-map'
 };
