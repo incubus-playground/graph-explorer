@@ -21,6 +21,14 @@
             }
         },
 
+        initialize: function(config, options) {
+            this.url = options && options.url;
+        },
+
+        parse: function(response) {
+            return response.elements;
+        },
+
         generateVisModel: function () {
             var self = this;
             var nameModel;
