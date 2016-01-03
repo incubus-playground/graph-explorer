@@ -21,7 +21,10 @@
   "homepage": "https://github.com/drwebmaker/graph-explorer",
   "devDependencies": {
     "backbone": "latest",
+    "css-loader": "^0.23.1",
     "jquery": "~2.1.4",
+    "style-loader": "^0.13.0",
+    "text": "latest",
     "underscore": "latest",
     "vis": "~4.8.0",
     "webpack": "^1.12.9"

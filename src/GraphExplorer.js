@@ -5,6 +5,8 @@
 var vis = require('vis'),
     $ = require('jquery'),
     showPlusIcon = require('./helpers/showPlusIcon'),
+    checkSuggestionOnCanvas = require('./helpers/checkSuggestionOnCanvas'),
+    SuggestionsView = require('./SuggestionsView'),
     ElementsCollection = require('./ElementsCollection');
 
 
@@ -14,6 +16,7 @@ function GraphExplorer(settings) {
     this.container = settings.container;
     this.options = settings.options;
     this.nodesOnCanvas = [];
+    this.raferenceToArray = {};
 
 
     self.dataCollection = new ElementsCollection([], {url: settings.url});
@@ -21,6 +24,8 @@ function GraphExplorer(settings) {
     self.dataCollection.on('sync', this.buildNodeCanvas, this);
 
     self.dataCollection.fetch();
+
+
 
 }
 
@@ -103,7 +108,71 @@ GraphExplorer.prototype.buildNodeCanvas = function () {
         self.showNode('order_details');
     }
 
-    network.on('click', this.clickHandler.bind(this));
+    //network.on('click', this.clickHandler.bind(this));
+    network.on('click', this.showSuggestionsPopup.bind(this));
+
+    this.suggestionCollection = new Backbone.Collection();
+    this.activeView = new SuggestionsView({collection: this.suggestionCollection});
+    $("#container").append(this.activeView.render().$el);
+
+    //$('.button-cancel').click = this.hideSuggestionsPopup();
+    $('.button-cancel').on('click', this.hideSuggestionsPopup.bind(this));
+};
+
+GraphExplorer.prototype.showSuggestionsPopup = function(params) {
+    var self = this;
+
+    params.event = "[original event]";
+    console.log(JSON.stringify(params, null, 4));
+
+    var nodeName;
+
+    var clickDOMPositionX = params.pointer.DOM.x;
+    var clickDOMPositionY = params.pointer.DOM.y;
+    var nodeNamePlusClicked = network.getNodeAt({x: clickDOMPositionX - 26, y: clickDOMPositionY + 40});
+
+    if(nodeNamePlusClicked == undefined && params.nodes[0] !== undefined) {
+        nodeName = params.nodes[0];
+    } else if(nodeNamePlusClicked !== undefined){
+        nodeName = nodeNamePlusClicked;
+    }
+
+    var nodePosition = network.getPositions(nodeName);
+
+    if(nodeName !== undefined) {
+        if(
+            (nodePosition[nodeName].x + 19) < params.pointer.canvas.x &&
+            (nodePosition[nodeName].x + 30) > params.pointer.canvas.x &&
+            (nodePosition[nodeName].y - 18) > params.pointer.canvas.y &&
+            (nodePosition[nodeName].y - 31) < params.pointer.canvas.y
+        ) {
+            this.suggestionArrey = this.getSuggestions(nodeName);
+            this.suggestionCollection.add(this.suggestionArrey);
+            $('.network-popUp').show();
+        }
+    }
+
+};
+
+GraphExplorer.prototype.hideSuggestionsPopup = function() {
+    this.suggestionCollection.remove(this.suggestionArrey);
+    $('.network-popUp').hide();
+};
+
+GraphExplorer.prototype.getSuggestions = function(nodeName) {
+    console.log(nodeName);
+    var referenceArrey = [];
+    var model = this.dataCollection.findCollection(nodeName);
+
+    this.elements = model.get('elements');
+
+    this.elements.each(function(item) {
+        if(item.get('referenceTo') !== undefined) {
+            referenceArrey.push(item);
+        }
+    });
+    console.log(referenceArrey);
+    return referenceArrey;
 };
 
 GraphExplorer.prototype.clickHandler = function(params) {
@@ -136,25 +205,24 @@ GraphExplorer.prototype.clickHandler = function(params) {
                 (nodePosition[nodeId].y - 18) > params.pointer.canvas.y &&
                 (nodePosition[nodeId].y - 31) < params.pointer.canvas.y
             ) {
-                if(!this.statusSuggestion) {
+                if(!nodes._data[nodeId].suggestionOpen && nodes._data[nodeId].suggestionOpen == undefined) {
                     self.expandNode(nodeId);
-                    this.statusSuggestion = true;
                 } else {
                     self.collapseNode(nodeId);
-                    this.statusSuggestion = false;
                 }
             }
         } else if(nodeId !== undefined && nodes._data[nodeId].group == 'suggestion') {
             var nodeX = nodePosition[nodeId].x;
             var nodeY = nodePosition[nodeId].y;
 
-            self.collapseNode(nodeId);
-            this.statusSuggestion = false;
+            self.collapseNode(nodes._data[nodeId].referenceFrom);
 
             self.showNode(nodeId, nodeX, nodeY);
         }
     }
 };
+
+
 
 GraphExplorer.prototype.destroy = function() {
     network.destroy();
@@ -195,7 +263,7 @@ GraphExplorer.prototype.showNode = function(nodeId, x, y) {
 GraphExplorer.prototype.expandNode = function(nodeId) {
     var self = this;
     var count = 0;
-    this.raferenceToArray = [];
+
     var nodePosition = network.getPositions([nodeId]);
     var options = {
         physics: {
@@ -204,8 +272,11 @@ GraphExplorer.prototype.expandNode = function(nodeId) {
     };
     network.setOptions(options);
 
-    var model = this.dataCollection.findCollection(nodeId);
-    this.elements = model.get('elements');
+    var modelNode = this.dataCollection.findCollection(nodeId);
+    this.elements = modelNode.get('elements');
+
+    nodes._data[modelNode.get('name')].suggestionOpen = true;
+    self.raferenceToArray[modelNode.get('name')] = [];
 
     this.elements.each(function(model) {
         if(model.get('referenceTo') !== undefined ) {
@@ -221,10 +292,12 @@ GraphExplorer.prototype.expandNode = function(nodeId) {
                                 return nodePosition[nodeId].y + (30 * (count-1))
                             }
                         } else {return nodePosition[nodeId].y - (30 * count)}})(),
-                    group: 'suggestion'
+                    group: 'suggestion',
+                    referenceFrom: modelNode.get('name')
                 });
                 count++;
-                self.raferenceToArray.push(model._getRelatedTableName(model.get('referenceTo')));
+
+                self.raferenceToArray[modelNode.get('name')].push(model._getRelatedTableName(model.get('referenceTo')));
             }
         }
     });
@@ -232,14 +305,18 @@ GraphExplorer.prototype.expandNode = function(nodeId) {
 };
 
 GraphExplorer.prototype.collapseNode = function(nodeId) {
-    var options = {
-        physics: {
-            enabled: true
-        }
-    };
-    network.setOptions(options);
-    nodes.remove(this.raferenceToArray);
-    this.raferenceToArray = [];
+    if(!checkSuggestionOnCanvas()){
+        var options = {
+            physics: {
+                enabled: true
+            }
+        };
+        network.setOptions(options);
+    }
+
+    delete nodes._data[nodeId].suggestionOpen;
+
+    nodes.remove(this.raferenceToArray[nodeId]);
     network.redraw();
 };
 
