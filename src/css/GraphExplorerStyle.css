@@ -1,15 +1,59 @@
 .network-popUp {
     display: none;
     position:absolute;
-    top:350px;
-    left:170px;
+    top:50%;
+    left:50%;
     z-index:299;
-    width:250px;
-    height:120px;
+    min-width: 200px;
     background-color: #f9f9f9;
     border-style:solid;
     border-width:3px;
     border-color: #5394ed;
     padding:10px;
     text-align: center;
+}
+
+.suggestion-list {
+    padding: 0;
+    margin: 0;
+}
+
+.suggestion-item-view label {
+    display: block;
+    line-height: 40px;
+    border: 1px solid #ddd;
+    border-radius: 10px;
+
+
+    /* Permalink - use to edit and share this gradient: http://colorzilla.com/gradient-editor/#ffffff+0,7db9e8+100 */
+    background: #ffffff; /* Old browsers */
+    background: -moz-linear-gradient(top,  #ffffff 0%, #7db9e8 100%); /* FF3.6-15 */
+    background: -webkit-linear-gradient(top,  #ffffff 0%,#7db9e8 100%); /* Chrome10-25,Safari5.1-6 */
+    background: linear-gradient(to bottom,  #ffffff 0%,#7db9e8 100%); /* W3C, IE10+, FF16+, Chrome26+, Opera12+, Safari7+ */
+    filter: progid:DXImageTransform.Microsoft.gradient( startColorstr='#ffffff', endColorstr='#7db9e8',GradientType=0 ); /* IE6-9 */
+}
+.suggestion-item-view.selected-item label {
+    /* Permalink - use to edit and share this gradient: http://colorzilla.com/gradient-editor/#ffffff+0,595bea+100 */
+    background: #ffffff; /* Old browsers */
+    background: -moz-linear-gradient(top,  #ffffff 0%, #595bea 100%); /* FF3.6-15 */
+    background: -webkit-linear-gradient(top,  #ffffff 0%,#595bea 100%); /* Chrome10-25,Safari5.1-6 */
+    background: linear-gradient(to bottom,  #ffffff 0%,#595bea 100%); /* W3C, IE10+, FF16+, Chrome26+, Opera12+, Safari7+ */
+    filter: progid:DXImageTransform.Microsoft.gradient( startColorstr='#ffffff', endColorstr='#595bea',GradientType=0 ); /* IE6-9 */
+
+}
+.suggestion-item-view {
+    list-style: none;
+    margin-bottom: 10px;
+}
+.suggestion-item-view:last-child {
+    margin-bottom: 0;
+}
+
+.suggestion-item {
+    display: none;
+}
+
+.buttons {
+    margin-top: 20px;
+
 }

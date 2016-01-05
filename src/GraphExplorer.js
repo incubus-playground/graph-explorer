@@ -25,7 +25,7 @@ function GraphExplorer(settings) {
 
     self.dataCollection.fetch();
 
-
+    $(this.container).css('position', 'relative');
 
 }
 
@@ -115,7 +115,7 @@ GraphExplorer.prototype.buildNodeCanvas = function () {
 
     this.suggestionCollection = new Backbone.Collection();
     this.activeView = new SuggestionsView({collection: this.suggestionCollection});
-    $("#container").append(this.activeView.render().$el);
+    $(this.container).append(this.activeView.render().$el);
 
     $('.button-cancel').on('click', this.hideSuggestionsPopup.bind(this));
     $('.button-select').on('click', this.addSuggestionsNodesToCanvas.bind(this));
@@ -154,6 +154,9 @@ GraphExplorer.prototype.showSuggestionsPopup = function(params) {
             this.suggestionCollection.add(this.suggestionArray);
             $('.network-popUp').show();
             this.nodeName = nodeName;
+            var popupWidth = $('.network-popUp').width();
+            var popupHeight = $('.network-popUp').height();
+            $('.network-popUp').css({'margin-left': -(popupWidth / 2), 'margin-top': -(popupWidth / 2)});
         }
     }
 };
