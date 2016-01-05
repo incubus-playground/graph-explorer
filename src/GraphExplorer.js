@@ -35,6 +35,8 @@ GraphExplorer.prototype.buildNodeCanvas = function () {
     var visData;
     var status = false;
     this.statusSuggestion = false;
+    this.checkedSuggedstions = [];
+    this.nodeName = '';
 
     var options = {
         width: settings.width,
@@ -115,8 +117,10 @@ GraphExplorer.prototype.buildNodeCanvas = function () {
     this.activeView = new SuggestionsView({collection: this.suggestionCollection});
     $("#container").append(this.activeView.render().$el);
 
-    //$('.button-cancel').click = this.hideSuggestionsPopup();
     $('.button-cancel').on('click', this.hideSuggestionsPopup.bind(this));
+    $('.button-select').on('click', this.addSuggestionsNodesToCanvas.bind(this));
+    this.suggestionCollection.on('setInputValue', this.addNodesToCheckedSuggestions.bind(this));
+    this.suggestionCollection.on('removeInputValue', this.removeNodesToCheckedSuggestions.bind(this));
 };
 
 GraphExplorer.prototype.showSuggestionsPopup = function(params) {
@@ -146,33 +150,83 @@ GraphExplorer.prototype.showSuggestionsPopup = function(params) {
             (nodePosition[nodeName].y - 18) > params.pointer.canvas.y &&
             (nodePosition[nodeName].y - 31) < params.pointer.canvas.y
         ) {
-            this.suggestionArrey = this.getSuggestions(nodeName);
-            this.suggestionCollection.add(this.suggestionArrey);
+            this.suggestionArray = this.getSuggestions(nodeName);
+            this.suggestionCollection.add(this.suggestionArray);
             $('.network-popUp').show();
+            this.nodeName = nodeName;
         }
     }
-
 };
 
 GraphExplorer.prototype.hideSuggestionsPopup = function() {
-    this.suggestionCollection.remove(this.suggestionArrey);
+    this.suggestionCollection.remove(this.suggestionArray);
     $('.network-popUp').hide();
+    this.nodeName = '';
+};
+
+GraphExplorer.prototype.addSuggestionsNodesToCanvas = function() {
+    var self = this;
+    var currentAngle = 0.5;
+
+    this.checkedSuggedstions.forEach(function(item) {
+        var pos = checkPositions();
+        self.showNode(item, pos.x, pos.y);
+        delete self.checkedSuggedstions[item];
+    });
+    this.checkedSuggedstions = [];
+    this.hideSuggestionsPopup();
+
+    function checkPositions() {
+        var nodeParentPosition = network.getPositions(self.nodeName);
+        var nodePosition = {};
+
+        var radius = 100;
+
+        function setPosition() {
+            var vx = Math.cos(currentAngle)*radius;
+            var vy = Math.sin(currentAngle)*radius;
+
+            nodePosition.x = nodeParentPosition[self.nodeName].x + vx;
+            nodePosition.y = nodeParentPosition[self.nodeName].y + vy;
+
+            currentAngle-=0.5;
+
+            if(network.getNodeAt(network.canvasToDOM({x: nodePosition.x, y: nodePosition.y})) !== undefined) {
+                currentAngle-=0.5;
+                setPosition();
+            }
+        }
+
+        setPosition();
+
+        return nodePosition;
+    }
 };
 
 GraphExplorer.prototype.getSuggestions = function(nodeName) {
-    console.log(nodeName);
-    var referenceArrey = [];
+    var referenceArray = [];
     var model = this.dataCollection.findCollection(nodeName);
 
     this.elements = model.get('elements');
 
     this.elements.each(function(item) {
         if(item.get('referenceTo') !== undefined) {
-            referenceArrey.push(item);
+            referenceArray.push(item);
         }
     });
-    console.log(referenceArrey);
-    return referenceArrey;
+    return referenceArray;
+};
+
+GraphExplorer.prototype.addNodesToCheckedSuggestions = function(item) {
+    this.checkedSuggedstions.push(item);
+};
+
+GraphExplorer.prototype.removeNodesToCheckedSuggestions = function(item) {
+    for(var i = 0; i < this.checkedSuggedstions.length; i++) {
+        if(this.checkedSuggedstions[i] == item) {
+            this.checkedSuggedstions.splice([i], 1);
+        }
+    }
 };
 
 GraphExplorer.prototype.clickHandler = function(params) {
@@ -221,8 +275,6 @@ GraphExplorer.prototype.clickHandler = function(params) {
         }
     }
 };
-
-
 
 GraphExplorer.prototype.destroy = function() {
     network.destroy();

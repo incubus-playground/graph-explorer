@@ -27,9 +27,11 @@ var SuggestionsView = Backbone.View.extend({
     },
 
     addItemView: function(item) {
-        var view = new SuggestionItemView({ model: item });
-        this.$('.suggestion-list').append(view.render().$el);
-        this.selectedSuggestions.push(view)
+        if(!nodes._data[item._getRelatedTableName(item.get('referenceTo'))]) {
+            var view = new SuggestionItemView({ model: item });
+            this.$('.suggestion-list').append(view.render().$el);
+            this.selectedSuggestions.push(view)
+        }
     },
 
     removeItemView: function() {

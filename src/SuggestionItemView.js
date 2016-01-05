@@ -33,7 +33,7 @@ var SuggestionItemView = Backbone.View.extend({
             //console.log($input.val());
         } else {
             $($input).parent().removeClass('selected-item');
-            //this.selectedSuggestions.pop();
+            this.model.trigger('removeInputValue', $input.val());
         }
         //console.log(this.selectedSuggestions);
     }
