@@ -166,13 +166,8 @@ var data = gpExplorer.getVisibleDataSet();
 
 ```sh
 & npm install
-& webpack
+& npm run build
 ```
-
-
-
-
-///not sure that we wanna 
 
 
 ##Node manipulations
@@ -180,30 +175,5 @@ var data = gpExplorer.getVisibleDataSet();
 ```javascript
 //Node operations
 gpExplorer
-	.addNode({
-			id : "/product",
-			label: "Product",
-			screenPosition : {
-				x : 10,
-				y : 8
-		} 	
-	})
-	.addNode({ ... })
-	.removeNode(nodeId);
+	.showNode(nodeId, xPosition, yPosition);
 ```
-
-##Edges manipulations 
-
-```javascript
-gpExplorer
-	.addEdge({
-		from: nodeId,
-		to: nodeId
-	})
-	.removeEdge({
-		from: nodeId,
-		to:	  nodeId 
-	});
-```
-
-##E

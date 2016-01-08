@@ -5,9 +5,7 @@
   "main": "main.js",
   "scripts": {
     "test": "grunt",
-    "build-js": "browserify src/example/main.js > src/example/app.js",
-    "watch-js": "watchify src/example/main.js -o src/example/app.js -vd",
-    "webpack": "webpack -w"
+    "build": "webpack"
   },
   "repository": {
     "type": "git",

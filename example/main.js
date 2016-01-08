@@ -11,7 +11,7 @@ var screenHeight = $(window).height();
 
 var settings = {
     container: container,
-    url: 'http://localhost:63342/graph-explorer/example/metadata.json',
+    url: './metadata.json',
     showAll: false,
     height: screenHeight + 'px',
     width: '100%'

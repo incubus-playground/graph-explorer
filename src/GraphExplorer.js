@@ -381,21 +381,29 @@ GraphExplorer.prototype.getVisibleDataSet = function() {
         elements: [],
         name: 'outputData'
     };
-    this.nodesOnCanvas.forEach(function(nodeId){
 
-        function getNodeGroup(data) {
-            data.forEach(function(item) {
-                if(!item.element && item.group.name == nodeId) {
-                    outputData.elements.push(item);
-                } else if(!item.element && item.group.elements) {
-                    getNodeGroup(item.group.elements);
+    $.ajax({
+        method: 'get',
+        url: this.settings.url,
+        success: function (data) {
+            self.nodesOnCanvas.forEach(function(nodeId){
+
+                function getNodeGroup(inputData) {
+                    inputData.forEach(function(item) {
+                        if(!item.element && item.group.name == nodeId) {
+                            outputData.elements.push(item);
+                        } else if(!item.element && item.group.elements) {
+                            getNodeGroup(item.group.elements);
+                        }
+                    });
+
+                    return outputData;
                 }
+                getNodeGroup(data.elements);
             });
-
-            return outputData;
         }
-        getNodeGroup(self.inputDataClone);
     });
+
     return outputData;
 };
 
