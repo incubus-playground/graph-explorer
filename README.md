@@ -151,9 +151,7 @@ height and width - it's size of you graph block
 ###Discovery
 
 ```javascript
-var node = gpExplorer.showNode(nodeId); 
-var childNodes = gpExplorer.expandNode(nodeId);
-gpExplorer.collapseNode(nodeId);
+var node = gpExplorer.showNode(nodeId);
 ```
 
 ###Get sub DataSet
@@ -169,11 +167,3 @@ var data = gpExplorer.getVisibleDataSet();
 & npm run build
 ```
 
-
-##Node manipulations
-
-```javascript
-//Node operations
-gpExplorer
-	.showNode(nodeId, xPosition, yPosition);
-```

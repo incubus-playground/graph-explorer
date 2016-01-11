@@ -110,7 +110,6 @@ GraphExplorer.prototype.buildNodeCanvas = function () {
         self.showNode('order_details');
     }
 
-    //network.on('click', this.clickHandler.bind(this));
     network.on('click', this.showSuggestionsPopup.bind(this));
 
     this.suggestionCollection = new Backbone.Collection();
@@ -232,53 +231,6 @@ GraphExplorer.prototype.removeNodesToCheckedSuggestions = function(item) {
     }
 };
 
-GraphExplorer.prototype.clickHandler = function(params) {
-    var self = this;
-
-    params.event = "[original event]";
-    console.log(JSON.stringify(params, null, 4));
-
-    var nodeName;
-
-    var clickDOMPositionX = params.pointer.DOM.x;
-    var clickDOMPositionY = params.pointer.DOM.y;
-    var nodeNamePlusClicked = network.getNodeAt({x: clickDOMPositionX - 26, y: clickDOMPositionY + 40});
-
-    if(nodeNamePlusClicked == undefined && params.nodes[0] !== undefined) {
-        nodeName = params.nodes[0];
-    } else if(nodeNamePlusClicked !== undefined){
-        nodeName = nodeNamePlusClicked;
-    }
-
-    var nodePosition = network.getPositions(nodeName);
-
-    openCloseSuggestionList(nodeName);
-
-    function openCloseSuggestionList(nodeId) {
-        if(nodeId !== undefined && nodes._data[nodeId].group !== 'suggestion') {
-            if(
-                (nodePosition[nodeId].x + 19) < params.pointer.canvas.x &&
-                (nodePosition[nodeId].x + 30) > params.pointer.canvas.x &&
-                (nodePosition[nodeId].y - 18) > params.pointer.canvas.y &&
-                (nodePosition[nodeId].y - 31) < params.pointer.canvas.y
-            ) {
-                if(!nodes._data[nodeId].suggestionOpen && nodes._data[nodeId].suggestionOpen == undefined) {
-                    self.expandNode(nodeId);
-                } else {
-                    self.collapseNode(nodeId);
-                }
-            }
-        } else if(nodeId !== undefined && nodes._data[nodeId].group == 'suggestion') {
-            var nodeX = nodePosition[nodeId].x;
-            var nodeY = nodePosition[nodeId].y;
-
-            self.collapseNode(nodes._data[nodeId].referenceFrom);
-
-            self.showNode(nodeId, nodeX, nodeY);
-        }
-    }
-};
-
 GraphExplorer.prototype.destroy = function() {
     network.destroy();
 };
@@ -313,66 +265,6 @@ GraphExplorer.prototype.showNode = function(nodeId, x, y) {
     this.nodesOnCanvas.push(nodeName);
 
     showPlusIcon.call(this);
-};
-
-GraphExplorer.prototype.expandNode = function(nodeId) {
-    var self = this;
-    var count = 0;
-
-    var nodePosition = network.getPositions([nodeId]);
-    var options = {
-        physics: {
-            enabled: false
-        }
-    };
-    network.setOptions(options);
-
-    var modelNode = this.dataCollection.findCollection(nodeId);
-    this.elements = modelNode.get('elements');
-
-    nodes._data[modelNode.get('name')].suggestionOpen = true;
-    self.raferenceToArray[modelNode.get('name')] = [];
-
-    this.elements.each(function(model) {
-        if(model.get('referenceTo') !== undefined ) {
-            if(!nodes._data[model._getRelatedTableName(model.get('referenceTo'))]) {
-                nodes.add({
-                    id: model._getRelatedTableName(model.get('referenceTo')),
-                    label: model._getRelatedTableName(model.get('referenceTo')),
-                    x: nodePosition[nodeId].x + 100,
-                    y: (function(){if(count % 2 == 0) {
-                            if(count ==0) {
-                                return nodePosition[nodeId].y + (30 * count)
-                            } else {
-                                return nodePosition[nodeId].y + (30 * (count-1))
-                            }
-                        } else {return nodePosition[nodeId].y - (30 * count)}})(),
-                    group: 'suggestion',
-                    referenceFrom: modelNode.get('name')
-                });
-                count++;
-
-                self.raferenceToArray[modelNode.get('name')].push(model._getRelatedTableName(model.get('referenceTo')));
-            }
-        }
-    });
-    network.redraw();
-};
-
-GraphExplorer.prototype.collapseNode = function(nodeId) {
-    if(!checkSuggestionOnCanvas()){
-        var options = {
-            physics: {
-                enabled: true
-            }
-        };
-        network.setOptions(options);
-    }
-
-    delete nodes._data[nodeId].suggestionOpen;
-
-    nodes.remove(this.raferenceToArray[nodeId]);
-    network.redraw();
 };
 
 GraphExplorer.prototype.getVisibleDataSet = function() {
