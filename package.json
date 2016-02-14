@@ -1,0 +1,30 @@
+{
+  "name": "graph-explorer",
+  "version": "0.0.1",
+  "description": "Graph Explorer",
+  "main": "main.js",
+  "scripts": {
+    "test": "grunt",
+    "build": "webpack"
+  },
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/drwebmaker/graph-explorer"
+  },
+  "keywords": [
+    "graph-explorer"
+  ],
+  "author": "valeriy.abornyev",
+  "license": "MIT",
+  "homepage": "https://github.com/drwebmaker/graph-explorer",
+  "devDependencies": {
+    "backbone": "latest",
+    "css-loader": "^0.23.1",
+    "jquery": "~2.1.4",
+    "style-loader": "^0.13.0",
+    "text": "latest",
+    "underscore": "latest",
+    "vis": "~4.8.0",
+    "webpack": "^1.12.9"
+  }
+}
